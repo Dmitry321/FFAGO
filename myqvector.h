@@ -291,7 +291,7 @@ public:
             default:
                 break;
             }
-            return median;
+            return medtmp;
         }
     }
 

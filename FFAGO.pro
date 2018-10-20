@@ -18,7 +18,6 @@ SOURCES += main.cpp \
     ffasettings.cpp \
     ffa.cpp \
     matrixmulty.cpp \
-    numpy.cpp \
     ffa_tools.cpp \
     ffa_stages.cpp \
     mydisplay.cpp \
@@ -29,7 +28,6 @@ HEADERS += \
     ffasettings.h \
     ffa.h \
     matrixmulty.h \
-    numpy.h \
     ffa_tools.h \
     ffa_stages.h \
     mydisplay.h \
