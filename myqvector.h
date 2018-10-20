@@ -10,7 +10,7 @@ class MyQVector
 {
 
 public:
-    explicit MyQVector(int nRow=1, int nCol=1)
+    explicit MyQVector(int nRow=1, int nCol=1, A fill_val = static_cast<A>(0))
     {
         nnRow = 1;
         nnCol = 1;
@@ -26,11 +26,13 @@ public:
             if(nnCol > 1)
                 flag_isMatrix=true;
         }
+        matrix.fill(fill_val,nnRow*nnCol);
 
-        if(flag_isMatrix)
-            matrix.resize(nnRow*nnCol);
-        else
-            matrix.resize(nnRow);
+
+//        if(flag_isMatrix)
+//            matrix.resize(nnRow*nnCol);
+//        else
+//            matrix.resize(nnRow);
 
 
     }
@@ -42,6 +44,9 @@ public:
 //        return res;
 //    }
 
+    //===================================================================================================
+    // reshape MyQVector matrix with new row and column
+    //===================================================================================================
     bool reshape(int row, int col)
     {
         int newsize = row*col;
@@ -76,7 +81,9 @@ public:
         return false;
     }
 
-
+    //===================================================================================================
+    // get column vector from MyQvector matrix by index
+    //===================================================================================================
     QVector<A> getColumn(int col=0)
     {
         QVector<A> res(nnRow);
@@ -92,6 +99,9 @@ public:
         return res;
     }
 
+    //===================================================================================================
+    // get row vector from MyQvector matrix by index
+    //===================================================================================================
     QVector<A> getRow(int row=0)
     {
         QVector<A> res(nnCol);
@@ -105,6 +115,9 @@ public:
     }
 
 
+    //===================================================================================================
+    // get sub vector from MyQvector
+    //===================================================================================================
     QVector<A> getVector(int i_start = 0, int i_end=-1)
     {
 
@@ -133,6 +146,9 @@ public:
         return flag_isMatrix;
     }
 
+    //===================================================================================================
+    // fill matrix with values
+    //===================================================================================================
     void fill(const A &fill_val, int nRow = 1, int nCol=1)
     {   
         if(nRow<=0)
@@ -151,11 +167,17 @@ public:
         matrix.fill(fill_val,nnRow*nnCol);
     }
 
+    //===================================================================================================
+    // maximum for vector
+    //===================================================================================================
     A maxVec(const QVector<A> &vect) const
     {
         return *std::max_element(vect.constBegin(), vect.constEnd());
     }
 
+    //===================================================================================================
+    // maximum for Matrix row or column; axis = 0 or 1
+    //===================================================================================================
     MyQVector<A> maxAxis(int axis = 0)
     {
         if(!flag_isMatrix || nnRow==1 || nnCol == 1)
@@ -194,11 +216,17 @@ public:
         }
     }
 
+    //===================================================================================================
+    // minimum for vector
+    //===================================================================================================
     A minVec(const QVector<A> &vect) const
     {
         return *std::min_element(vect.constBegin(), vect.constEnd());
     }
 
+    //===================================================================================================
+    // minimum for Matrix row or column; axis = 0 or 1
+    //===================================================================================================
     MyQVector<A> minAxis(int axis = 0)
     {
         if(!flag_isMatrix || nnRow==1 || nnCol == 1)
@@ -295,7 +323,9 @@ public:
         }
     }
 
-
+    //===================================================================================================
+    // transpon Matrix
+    //===================================================================================================
     void transpon()
     {
         int tmprow = nnRow;
@@ -330,6 +360,9 @@ public:
         }
     }
 
+    //===================================================================================================
+    // generate range vector from 0 to num integer value
+    //===================================================================================================
     void arange(const int &num)
     {
         if(flag_isMatrix)
@@ -352,6 +385,9 @@ public:
         }
     }
 
+    //===================================================================================================
+    // Overload generate range vector from n_start to n_end integer value with step delta
+    //===================================================================================================
     void arange(const int &n_start, const int &n_end, int delta = 1)
     {
 
@@ -376,44 +412,9 @@ public:
         }
     }
 
-
-    void masked_where(const A condition, bool maskVal = true)
-    {
-        matrix_mask.fill(!maskVal,nnCol*nnRow);
-        int k=0;
-        for (const A &v : qAsConst(matrix))
-        {
-            if(qFuzzyCompare(v,condition))
-            {
-                matrix_mask[k] = maskVal;
-            }
-            k++;
-        }
-    }
-
-    inline void operator = (const QVector<A> &Vect ) {
-        if(Vect.size() > 0)
-        {
-             matrix = Vect;
-             nnCol=1;
-             nnRow = Vect.size();
-             flag_isMatrix=false;
-         }
-        else{
-            qDebug() << "inline void operator = (const QVector<A> &Vect ) " << "Error Size of rvector <=0 ";
-        }
-    }
-
-    inline void operator = (MyQVector<A> &Vect )
-    {
-             nnRow=Vect.size(0);
-             nnCol = Vect.size(1);
-             matrix = Vect.getVector();
-             flag_isMatrix=Vect.isMatrix();
-    }
-
-
-
+    //===================================================================================================
+    // size of matrix row or column
+    //===================================================================================================
     inline int size(const int &naxis) const
     {
         switch (naxis) {
@@ -429,16 +430,81 @@ public:
         }
     }
 
+    //===================================================================================================
+    // size of matrix as a vector size
+    //===================================================================================================
     int msize() const
     {
         return nnCol*nnRow;
     }
 
+    //===================================================================================================
+    // size of matrix as a QPair<row,col>
+    //===================================================================================================
     QPair<int, int> sizeQ()
     {
         return QPair<int, int>(nnRow, nnCol);
     }
+    //===================================================================================================
+    // analog of pythom numpy masked_where
+    //===================================================================================================
+    void masked_where(const A condition, bool maskVal = true)
+    {
+        matrix_mask.fill(!maskVal,nnCol*nnRow);
+        int k=0;
+        for (const A &v : qAsConst(matrix))
+        {
+            if(qFuzzyCompare(v,condition))
+            {
+                matrix_mask[k] = maskVal;
+            }
+            k++;
+        }
+    }
 
+    //===================================================================================================
+    // Overload operator =  For assignment QVector<A> to MyQVector object
+    //===================================================================================================
+    inline void operator = (const QVector<A> &Vect ) {
+        if(Vect.size() > 0)
+        {
+             matrix = Vect;
+             nnCol=1;
+             nnRow = Vect.size();
+             flag_isMatrix=false;
+         }
+        else{
+            qDebug() << "inline void operator = (const QVector<A> &Vect ) " << "Error Size of rvector <=0 ";
+        }
+    }
+
+    //===================================================================================================
+    // Overload operator =  For assignment one MyQVector object to another
+    //===================================================================================================
+    inline void operator = (MyQVector<A> &Vect )
+    {
+             nnRow=Vect.size(0);
+             nnCol = Vect.size(1);
+             matrix = Vect.getVector();
+             flag_isMatrix=Vect.isMatrix();
+    }
+
+    //===================================================================================================
+    // Overload operator =
+    //===================================================================================================
+    MyQVector<A> &operator=(const MyQVector<A>  &v)
+    {
+         QVector<A> tmp(v.matrix);
+         tmp.swap(this->matrix);
+         this->flag_isMatrix = v.flag_isMatrix;
+         this->nnCol = v.nnCol;
+         this->nnRow = v.nnRow;
+         return *this;
+    }
+
+    //===================================================================================================
+    // Overload operator []  For assignment to matrix element
+    //===================================================================================================
     A& operator[](int n) {
         int m_size = matrix.size();
         if( n >= m_size )
@@ -447,6 +513,9 @@ public:
         return (matrix.begin()[n]);
     }
 
+    //===================================================================================================
+    // Overload operator []  For get matrix element value
+    //===================================================================================================
     const A& operator[](int n) const
     {
         int m_size = matrix.size();
@@ -456,6 +525,9 @@ public:
 
     }
 
+    //===================================================================================================
+    // Overload at() For get matrix element value as vector index
+    //===================================================================================================
     A at(int n) const
     {
         int m_size = matrix.size();
@@ -464,6 +536,9 @@ public:
         return matrix.at(n);
     }
 
+    //===================================================================================================
+    // Overload at() For get matrix element value as matrix nxm indexes
+    //===================================================================================================
     A at(int row, int col) const
     {
         int m_size = matrix.size();
@@ -473,6 +548,9 @@ public:
         return matrix.at(n_index);
     }
 
+    //===================================================================================================
+    // Overload operator ()  For assignment matrix element value by matrix indexes
+    //===================================================================================================
     A& operator()(int row, int col)
     {
         int n_index = nnCol * row + col;
@@ -482,6 +560,9 @@ public:
         return (matrix.begin()[n_index]);
     }
 
+    //===================================================================================================
+    // Overload operator ()  For get matrix element value by matrix indexes
+    //===================================================================================================
     const A& operator()(int row, int col) const
     {
         int n_index = nnCol * row + col;
@@ -491,25 +572,45 @@ public:
         return matrix.at(n_index);
     }
 
-    // comfort
+    //===================================================================================================
+    // Overload operator + For adds two MyVectors object as  2d arrays
+    //===================================================================================================
     inline MyQVector<A> operator+(const MyQVector<A> &l) const
     { MyQVector<A> n = *this; n += l; return n; }
 
+    //===================================================================================================
+    // Overload operator -
+    //===================================================================================================
     inline MyQVector<A> operator-(const MyQVector<A> &l) const
     { MyQVector<A> n = *this; n -= l; return n; }
 
+    //===================================================================================================
+    // Overload operator +  to add value to each element of matrix
+    //===================================================================================================
     inline MyQVector<A> operator+(const A &l) const
     { MyQVector<A> n = *this; n += l; return n; }
 
+    //===================================================================================================
+    // Overload operator -  to del value from each element of matrix
+    //===================================================================================================
     inline MyQVector<A> operator-(const A &l) const
     { MyQVector<A> n = *this; n -= l; return n; }
 
+    //===================================================================================================
+    // Overload operator *  to multiple two matrixes
+    //===================================================================================================
     inline MyQVector<A> operator*(const MyQVector<A> &l) const
     { MyQVector<A> n = *this; n *= l; return n; }
 
+    //===================================================================================================
+    // Overload operator *  to multiple matrix by value
+    //===================================================================================================
     inline MyQVector<A> operator*(const A &l) const
     { MyQVector<A> n = *this; n *= l; return n; }
 
+    //===================================================================================================
+    // Overload operator +=
+    //===================================================================================================
     inline MyQVector<A> &operator+=(const MyQVector<A> &v)
     {
         int nRow1 =  this->size(0);
@@ -527,6 +628,9 @@ public:
         return *this;
     }
 
+    //===================================================================================================
+    // Overload operator +=
+    //===================================================================================================
     inline MyQVector<A> &operator+=(const A &v)
     {
         int nRow1 =  this->size(0);
@@ -544,6 +648,9 @@ public:
         return *this;
     }
 
+    //===================================================================================================
+    // Overload operator -=
+    //===================================================================================================
     inline MyQVector<A> &operator-=(const A &v)
     {
         int nRow1 =  this->size(0);
@@ -561,6 +668,9 @@ public:
         return *this;
     }
 
+    //===================================================================================================
+    // Overload operator -=
+    //===================================================================================================
     inline MyQVector<A> &operator-=(const MyQVector<A> &v)
     {
         int nRow1 =  this->size(0);
@@ -578,6 +688,9 @@ public:
         return *this;
     }
 
+    //===================================================================================================
+    // Overload operator *=
+    //===================================================================================================
     inline MyQVector<A> &operator*=(const MyQVector<A> &v)
     {
         int nRow1 =  this->size(0);
@@ -595,6 +708,9 @@ public:
         return *this;
     }
 
+    //===================================================================================================
+    // Overload operator *=
+    //===================================================================================================
     inline MyQVector<A> &operator*=(const A &v)
     {
         int nRow1 =  this->size(0);
@@ -613,54 +729,9 @@ public:
     }
 
 
-    MyQVector<A> &operator=(const MyQVector<A>  &v)
-    {
-         QVector<A> tmp(v.matrix);
-         tmp.swap(this->matrix);
-         this->flag_isMatrix = v.flag_isMatrix;
-         this->nnCol = v.nnCol;
-         this->nnRow = v.nnRow;
-         return *this;
-    }
-
-
-//    // Overload + operator to add two Box objects.
-//    MyQVector<A> operator+(const MyQVector<A>& rvect)
-//    {
-//        QPair<int, int> qsize1 = this->sizeQ();
-//        QPair<int, int> qsize2 = rvect.sizeQ();
-
-//        int nRow1 = qsize1.first;
-//        int nRow2 = qsize2.first;
-//        int nCol1 = qsize1.second;
-//        int nCol2 = qsize2.second;
-
-//        int nRowMax=nRow1;
-//        int nRowMin=nRow1;
-//        int nColMax=nCol1;
-//        int nColMin=nCol1;
-
-//        if(nRow1!=nRow2 || nCol1!=nCol2)
-//        {
-//            nRowMin = qMin(nRow1,nRow2);
-//            nColMin = qMin(nCol1,nCol2);
-//            nRowMax = qMax(nRow1,nRow2);
-//            nColMax = qMax(nCol1,nCol2);
-//        }
-
-//        MyQVector<A> resvect(nRowMax, nColMax);
-//        qDebug() << "nRowMax" << nRowMax << "nColMax" << nColMax;
-
-//        for(int i = 0; i < nRowMax*nColMax; i++)
-//        {
-//            resvect[i] = this->at(i) +  rvect.at(i);
-
-//        }
-
-//        resvect.show();
-//        return resvect;
-//    }
-
+    //===================================================================================================
+    // For debug to show matrix
+    //===================================================================================================
     void show()
     {
         QString strOut = "[";
@@ -707,6 +778,9 @@ public:
 
     }
 
+    //===================================================================================================
+    // For debug to show matrix mask
+    //===================================================================================================
     void show_masked()
     {
         QString strOut = "[";
