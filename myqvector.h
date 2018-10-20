@@ -235,7 +235,9 @@ public:
             return resMin;
         }
     }
-
+//===================================================================================================
+// http://www.cplusplus.com/forum/beginner/232940/    median for odd and even time series
+//===================================================================================================
     A median( const QVector<A> &v ) const
     {
         QVector<A> seq = v;
@@ -253,6 +255,9 @@ public:
         return ( m1 + seq[ (n-1)/2 ] ) / d2 ;
     }
 
+ //===================================================================================================
+ // median for Matrix row or column; axis = 0 or 1
+ //===================================================================================================
     MyQVector<A>  medianAxis(int axis = 0)
     {
         if(!flag_isMatrix || nnRow==1 || nnCol == 1)
@@ -260,6 +265,33 @@ public:
             MyQVector<A> medtmp;
             medtmp.fill(median(matrix),1,1);
             return medtmp;
+        }
+        else
+        {
+            QVector<A> tmp;
+            MyQVector<A> medtmp;
+
+            switch (axis) {
+            case 0:  // column
+                medtmp.fill(0,nnCol);
+                for(int col=0; col < nnCol; col++)
+                {
+                        tmp = getColumn(col);
+                        medtmp[col] = median(tmp);
+                }
+                break;
+            case 1: // row
+                medtmp.fill(0,nnRow);
+                for(int row=0; row < nnRow; row++)
+                {
+                    tmp = matrix.mid(row*nnCol,nnCol);
+                    medtmp[row] = median(tmp);
+                }
+                break;
+            default:
+                break;
+            }
+            return median;
         }
     }
 
