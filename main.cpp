@@ -41,24 +41,44 @@ int main(int argc, char *argv[])
 
     MyQVector<float> myvect1(5,4);
 
-    myvect1.arange(1,162,2);
+//    myvect1.arange(1,162,2);
 
-    myvect1.show();
+//    myvect1.show();
 
-    myvect1.reshape(-1, 5,true);
+//    myvect1.reshape(-1, 5,true,23.1f);
 
-    myvect1.show();
+//    myvect1.show();
 
-    myvect1.transpon();
+//    myvect1.transpon();
 
-    myvect1.show();
+//    myvect1.show();
 
     MyQVector<float> mxv = myvect1.maxAxis(1);
 
+    //mxv.show();
+
+    ffaStages fs;
+
+    testSignal ts;
+
+    ts.genSinus(test1,20,0.3f,0.05f);
+
+    myvect1 = test1;
+
+    myvect1.show();
+
+    mxv = myvect1.maxAxis();
+
     mxv.show();
 
+    mxv = myvect1.meanAxis();
+
+    mxv.show();
+
+    float sigma_total = myvect1.standardDeviation();
 
 
+    fs.ffaCodeStage1(myvect1, 0.05, 1, sigma_total, 0.2, 0.4, 40);
 
 
     return 0;
@@ -71,7 +91,7 @@ int main(int argc, char *argv[])
 
     myvect1(1,2) = 23;
 
-    QVector<float> testRand({0.82307711, 0.34292748, 0.51316598, 0.47400193, 0.53924523,0.45135059, 0.2796427 , 0.28789632, 0.32794904, 0.82076353});
+    QVector<float> testRand({0.82307711f, 0.34292748f, 0.51316598f, 0.47400193f, 0.53924523f,0.45135059f, 0.2796427f , 0.28789632f, 0.32794904f, 0.82076353f});
 
     myvect1 = testRand;
 

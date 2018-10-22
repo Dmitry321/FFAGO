@@ -41,7 +41,7 @@ public:
     //===================================================================================================
     // reshape MyQVector matrix with new row and column
     //===================================================================================================
-    bool reshape(int row, int col, bool flag_pow2=false)
+    bool reshape(int row, int col, bool flag_pow2=false, A fillVal = static_cast<A>(0))
     {
         int allSize = nnRow*nnCol;
         //qDebug() << "row   " << row << "allSize " << allSize << "col " << col;
@@ -61,7 +61,7 @@ public:
         int newsize = row*col;
         if(newsize > allSize)
         {
-            QVector<A> tmp(newsize);
+            QVector<A> tmp(newsize,fillVal);
             int k = 0;
             for (const auto &v : qAsConst(matrix))
             {
@@ -582,6 +582,72 @@ public:
     }
 
     //===================================================================================================
+    // std vector
+    //===================================================================================================
+    A standardDeviation(const QVector<A> &vector, A xavg, int vecSize)
+    {
+        A sum = 0;
+        A diffs;
+        for (const auto &xi : qAsConst(vector))
+        {
+            diffs = xi - xavg;
+            sum += diffs * diffs;
+        }
+        return  std::sqrt(sum / static_cast<A>(vecSize));
+    }
+
+    //===================================================================================================
+    // std
+    //===================================================================================================
+    A standardDeviation()
+    {
+        A avg = meanVec(matrix);
+        return standardDeviation(matrix, avg, nnCol*nnRow);
+    }
+
+    //===================================================================================================
+    // std in axis of matrix my col or by row
+    //===================================================================================================
+     MyQVector<A> standardDeviation(const int &axis)
+     {
+         A avg;
+         MyQVector<A> resStd;
+         QVector<A> tmp;
+
+         switch (axis) {
+         case -1:   // default for all vector not as Matrix
+             avg = meanVec(matrix);
+             resStd.fill(standardDeviation(matrix, avg, nnCol*nnRow),1,1);
+             break;
+         case 0:  // column
+             resStd.fill(0,nnCol);
+             for(int col=0; col < nnCol; col++)
+             {
+                 tmp = getColumn(col);
+                 avg = meanVec(tmp);
+                 resStd[col] = standardDeviation(tmp, avg, nnCol*nnRow);
+             }
+             break;
+         case 1: // row
+             resStd.fill(0,nnRow);
+             for(int row=0; row < nnRow; row++)
+             {
+                 tmp = matrix.mid(row*nnCol,nnCol);
+                 avg = meanVec(tmp);
+                 resStd[row] = standardDeviation(tmp, avg, nnCol*nnRow);
+             }
+             break;
+         default:
+             break;
+         }
+         return resStd;
+     }
+
+
+
+
+
+    //===================================================================================================
     // Select from vector values >= min condition and <=max condition values
     //===================================================================================================
     MyQVector<A> selectCondition(const A &minr, const A &maxr)
@@ -647,6 +713,8 @@ public:
             k++;
         }
     }
+
+
 
     //===================================================================================================
     // Overload operator =  For assignment QVector<A> to MyQVector object
