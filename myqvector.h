@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QVector>
 #include <QDebug>
+#include <cmath>
+#include "mymath.h"
 
 template<class A>
 class MyQVector
@@ -27,14 +29,6 @@ public:
                 flag_isMatrix=true;
         }
         matrix.fill(fill_val,nnRow*nnCol);
-
-
-//        if(flag_isMatrix)
-//            matrix.resize(nnRow*nnCol);
-//        else
-//            matrix.resize(nnRow);
-
-
     }
 
 //    MyQVector<A> reshape(const MyQVector<A> &vec, int row, int col)
@@ -47,14 +41,29 @@ public:
     //===================================================================================================
     // reshape MyQVector matrix with new row and column
     //===================================================================================================
-    bool reshape(int row, int col)
+    bool reshape(int row, int col, bool flag_pow2=false)
     {
+        int allSize = nnRow*nnCol;
+        //qDebug() << "row   " << row << "allSize " << allSize << "col " << col;
+        if(row <0 && col > 1)
+        {
+            row = allSize%col
+                    ? allSize/col +1
+                    : allSize/col;
+        }
+        if(flag_pow2)
+        {
+            int k = static_cast<int>(std::ceil(std::log2(static_cast<double>(row))));
+            row = static_cast<int>(pow2(static_cast<uint64_t>(k)));
+        }
+
+
         int newsize = row*col;
-        if(newsize > nnRow*nnCol)
+        if(newsize > allSize)
         {
             QVector<A> tmp(newsize);
             int k = 0;
-            for (const A &v : qAsConst(matrix))
+            for (const auto &v : qAsConst(matrix))
             {
                 tmp[k]=v;
                 k++;
@@ -68,7 +77,7 @@ public:
                 flag_isMatrix=false;
             return true;
         }
-        if(newsize==nnRow*nnCol && nnCol!=col)
+        if(newsize==allSize && nnCol!=col)
         {
             nnRow = qAbs(row);
             nnCol = qAbs(col);
@@ -80,6 +89,8 @@ public:
         }
         return false;
     }
+
+
 
     //===================================================================================================
     // get column vector from MyQvector matrix by index
@@ -263,6 +274,142 @@ public:
             return resMin;
         }
     }
+
+    //===================================================================================================
+    // Index of maximum for Matrix row or column; axis = 0 or 1
+    //===================================================================================================
+    MyQVector<A> argmaxAxis(int axis = 0)
+    {
+        A maxval;
+        if(!flag_isMatrix || nnRow==1 || nnCol == 1)
+        {
+            maxval = maxVec(matrix);
+            MyQVector<A> indexMax(1,1,matrix.indexOf(maxval));
+            return indexMax;
+        }
+        else
+        {
+            QVector<A> tmp;
+            MyQVector<A> indexMax;
+
+            switch (axis) {
+            case 0:
+                indexMax.fill(0,nnCol);
+                for(int col=0; col < nnCol; col++)
+                {
+                    tmp = getColumn(col);
+                    maxval = maxVec(tmp);
+                    indexMax[col]=matrix.indexOf(maxval);
+                }
+                break;
+            case 1:
+                indexMax.fill(0,nnRow);
+                for(int row=0; row < nnRow; row++)
+                {
+                    tmp = matrix.mid(row*nnCol,nnCol);
+                    maxval = maxVec(tmp);
+                    indexMax[row] = matrix.indexOf(maxval);
+                }
+                break;
+            default:
+                break;
+            }
+            return indexMax;
+        }
+    }
+
+    //===================================================================================================
+    // Index of minimum for Matrix row or column; axis = 0 or 1
+    //===================================================================================================
+    MyQVector<A> argminAxis(int axis = 0)
+    {
+        A minval;
+        if(!flag_isMatrix || nnRow==1 || nnCol == 1)
+        {
+            minval = minVec(matrix);
+            MyQVector<A> indexMin(1,1,matrix.indexOf(minval));
+            return indexMin;
+        }
+        else
+        {
+            QVector<A> tmp;
+            MyQVector<A> indexMin;
+
+            switch (axis) {
+            case 0:
+                indexMin.fill(0,nnCol);
+                for(int col=0; col < nnCol; col++)
+                {
+                    tmp = getColumn(col);
+                    minval = minVec(tmp);
+                    indexMin[col]=matrix.indexOf(minval);
+                }
+                break;
+            case 1:
+                indexMin.fill(0,nnRow);
+                for(int row=0; row < nnRow; row++)
+                {
+                    tmp = matrix.mid(row*nnCol,nnCol);
+                    minval = minVec(tmp);
+                    indexMin[row] = matrix.indexOf(minval);
+                }
+                break;
+            default:
+                break;
+            }
+            return indexMin;
+        }
+    }
+
+    //===================================================================================================
+    //
+    //===================================================================================================
+    A meanVec(const QVector<A>& vector)
+    {
+        int n = vector.size();
+        A avg = std::accumulate(vector.begin(), vector.end(), static_cast<A>(0)) / static_cast<A>(n);
+        return avg;
+    }
+
+    //===================================================================================================
+    // median for Matrix row or column; axis = 0 or 1
+    //===================================================================================================
+    MyQVector<A>  meanAxis(int axis = 0)
+    {
+        MyQVector<A> medtmp;
+        if(!flag_isMatrix || nnRow==1 || nnCol == 1)
+        {
+
+            medtmp.fill(meanVec(matrix),1,1);
+            return medtmp;
+        }
+        else
+        {
+            QVector<A> tmp;
+            switch (axis) {
+            case 0:  // column
+                medtmp.fill(0,nnCol);
+                for(int col=0; col < nnCol; col++)
+                {
+                    tmp = getColumn(col);
+                    medtmp[col] = meanVec(tmp);
+                }
+                break;
+            case 1: // row
+                medtmp.fill(0,nnRow);
+                for(int row=0; row < nnRow; row++)
+                {
+                    tmp = matrix.mid(row*nnCol,nnCol);
+                    medtmp[row] = meanVec(tmp);
+                }
+                break;
+            default:
+                break;
+            }
+            return medtmp;
+        }
+    }
+
 //===================================================================================================
 // http://www.cplusplus.com/forum/beginner/232940/    median for odd and even time series
 //===================================================================================================
@@ -273,14 +420,22 @@ public:
         const auto n = seq.size() ;
 
         std::nth_element( seq.begin(), seq.begin() + n/2, seq.end() );
-        const A m1 = seq[n/2] ;
+        const auto m1 = seq[n/2] ;
 
         if( n%2 == 1 ) return m1 ; // if n is odd
 
-        // even n
+        //if n is even
         std::nth_element( seq.begin(), seq.begin() + (n-1)/2, seq.end() );
-        const A d2 = static_cast<A>(2);
+        const auto d2 = static_cast<A>(2);
         return ( m1 + seq[ (n-1)/2 ] ) / d2 ;
+    }
+
+    //===================================================================================================
+    // median for vectro
+    //===================================================================================================
+    A  medianV() const
+    {
+        return median(matrix);
     }
 
  //===================================================================================================
@@ -354,7 +509,7 @@ public:
             }
             nnRow = nnCol;
             nnCol = tmprow;
-            qDebug() << tmp;
+
             tmp.swap(matrix);
             flag_isMatrix = true;
         }
@@ -410,6 +565,37 @@ public:
                 matrix[i] = static_cast<A>(n_start) + static_cast<A>(delta)*static_cast<A>(i);
             }
         }
+    }
+
+    //===================================================================================================
+    // normalize vector
+    //===================================================================================================
+    void normalize()
+    {
+        auto vMax = maxVec(matrix);
+
+        //for (const auto &val : qAsConst(matrix))
+        for(int i=0; i<matrix.size(); i++)
+        {
+            matrix[i] = matrix.at(i)/vMax;
+        }
+    }
+
+    //===================================================================================================
+    // Select from vector values >= min condition and <=max condition values
+    //===================================================================================================
+    MyQVector<A> selectCondition(const A &minr, const A &maxr)
+    {
+        QVector<A> resCondition;
+        for (const auto &v : qAsConst(matrix))
+        {
+            if(v>=minr && v<=maxr)
+                resCondition.append(v);
+        }
+        MyQVector<A> res;
+        res = resCondition;
+
+        return res;
     }
 
     //===================================================================================================

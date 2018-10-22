@@ -2,7 +2,7 @@
 #include <QDebug>
 #include <cmath>
 #include <QtMath>
-#include "mydisplay.h"
+
 
 ffa_stages::ffa_stages()
 {
@@ -44,7 +44,7 @@ ffa_stages::ffa_stages()
 //    """
 QVector< QVector<float> > ffa_stages::FFA(const QVector<QVector<float> > &XW)
 {
-    mydisplay dd;
+    //mydisplay dd;
     QVector<float> res;
     int nRow = XW.size();
     int P0 = XW.first().size();

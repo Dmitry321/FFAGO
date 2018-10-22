@@ -17,19 +17,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp \
     ffasettings.cpp \
     ffa.cpp \
-    matrixmulty.cpp \
     ffa_tools.cpp \
     ffa_stages.cpp \
-    mydisplay.cpp \
     testsignal.cpp \
-    myqvector.cpp
+    myqvector.cpp \
+    ffago.cpp \
+    ffatools.cpp \
+    ffastages.cpp
 
 HEADERS += \
     ffasettings.h \
     ffa.h \
-    matrixmulty.h \
     ffa_tools.h \
     ffa_stages.h \
-    mydisplay.h \
     testsignal.h \
-    myqvector.h
+    myqvector.h \
+    ffago.h \
+    ffatools.h \
+    ffastages.h \
+    mymath.h

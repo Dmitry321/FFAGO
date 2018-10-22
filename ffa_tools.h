@@ -1,12 +1,11 @@
 #ifndef FFA_TOOLS_H
 #define FFA_TOOLS_H
 
-//#include "numpy.h"
 #include <QVector>
 #include <QtMath>
 #include <algorithm>
 #include <QDebug>
-#include "myqvector.h"
+
 
 class ffa_tools
 {
@@ -25,13 +24,13 @@ public:
         return  mtr;
     }
 
-    template<typename T>
-    MyQVector<T> reshape(const MyQVector<T> &vec, int row, int col)
-    {
-        MyQVector<T> res(vec);
-        res.reshape(row,col);
-        return res;
-    }
+//    template<typename T>
+//    MyQVector<T> reshape(const MyQVector<T> &vec, int row, int col)
+//    {
+//        MyQVector<T> res(vec);
+//        res.reshape(row,col);
+//        return res;
+//    }
 
 //    QVector< QVector<bool> > initMatrixBool(const int &nRow, const int &mCol, bool fill_value = false)
 //    {
